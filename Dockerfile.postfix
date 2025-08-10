@@ -1,0 +1,53 @@
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    postfix \
+    libsasl2-2 \
+    sasl2-bin \
+    libsasl2-modules \
+    libsasl2-modules-db \
+    ca-certificates \
+    openssl \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/postfix/tls \
+ && openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+      -keyout /etc/postfix/tls/server.key -out /etc/postfix/tls/server.crt \
+      -subj "/CN=localhost" \
+ && postconf -e 'smtpd_tls_cert_file = /etc/postfix/tls/server.crt' \
+ && postconf -e 'smtpd_tls_key_file = /etc/postfix/tls/server.key' \
+ && postconf -e 'smtpd_tls_security_level = may' \
+ && postconf -e 'smtpd_tls_auth_only = yes' \
+ && postconf -e 'myhostname = localhost' \
+ && postconf -e 'smtpd_banner = $myhostname ESMTP' \
+ && postconf -e 'inet_interfaces = all' \
+ && postconf -e 'inet_protocols = ipv4' \
+ && postconf -e 'smtpd_recipient_restrictions = permit_mynetworks,permit_sasl_authenticated,reject_unauth_destination' \
+ && postconf -e 'mynetworks = 0.0.0.0/0' \
+ && postconf -e 'smtpd_sasl_auth_enable = yes' \
+ && postconf -e 'smtpd_sasl_type = cyrus' \
+ && postconf -e 'smtpd_sasl_path = smtpd' \
+ && postconf -e 'smtpd_sasl_security_options = noanonymous' \
+  && postconf -e 'broken_sasl_auth_clients = yes'
+
+RUN mkdir -p /etc/sasl2 \
+ && printf "pwcheck_method: auxprop\nauxprop_plugin: sasldb\nmech_list: cram-md5\n" > /etc/sasl2/smtpd.conf
+
+RUN sed -ri 's/^(smtp\s+inet\s+)(n\s+-\s+)[y](\s+-\s+-\s+smtpd)/\1\2n\3/' /etc/postfix/master.cf || true
+
+RUN echo -n pass | saslpasswd2 -c -p -u localhost smtpuser \
+ && chown root:sasl /etc/sasldb2 \
+ && chmod 640 /etc/sasldb2 \
+ && adduser postfix sasl
+
+COPY scripts/postfix-start.sh /usr/local/bin/postfix-start.sh
+RUN chmod +x /usr/local/bin/postfix-start.sh
+
+EXPOSE 25
+
+CMD ["bash", "-lc", "/usr/local/bin/postfix-start.sh"]
+
+

@@ -1,0 +1,33 @@
+name: phpmailer
+recipe: lamp
+config:
+  webroot: .
+  php: '8.2'
+proxy:
+  appserver:
+    - phpmailer.lndo.site
+  mailpit:
+    - mailpit.phpmailer.lndo.site
+services:
+  mailpit:
+    type: mailpit
+    mailFrom:
+      - appserver
+    overrides:
+      environment:
+        MP_SMTP_RELAY_CONFIG: /app/smtp-relay.yml
+      depends_on:
+        - postfix
+  postfix:
+    type: compose
+    overrides:
+      build:
+        context: .
+        dockerfile: Dockerfile.postfix
+      user: root
+      command: ["bash","-lc","/usr/local/bin/postfix-start.sh"]
+tooling:
+  test:
+    service: appserver
+    cmd: bash -lc './scripts/lando-test.sh'
+    

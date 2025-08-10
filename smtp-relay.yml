@@ -1,0 +1,8 @@
+host: postfix
+port: 25
+starttls: true
+allow-insecure: true
+auth: cram-md5
+username: smtpuser
+secret: pass
+
