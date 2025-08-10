@@ -1,0 +1,28 @@
+FROM alpine:3.19
+
+RUN apk add --no-cache \
+    bash \
+    ca-certificates \
+    git \
+    curl \
+    php83 \
+    php83-cli \
+    php83-phar \
+    php83-ctype \
+    php83-dom \
+    php83-xml \
+    php83-xmlwriter \
+    php83-tokenizer \
+    php83-openssl \
+    php83-iconv \
+    php83-session \
+    php83-curl \
+    php83-pdo \
+    php83-pdo_mysql \
+    php83-intl \
+    php83-imap \
+    php83-zip
+
+RUN mkdir -p /etc/php83/conf.d \
+    && printf "error_reporting=E_ALL\ndisplay_errors=On\nsendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php83/conf.d/zz-lando.ini \
+    && ln -sf /usr/bin/php83 /usr/bin/php
