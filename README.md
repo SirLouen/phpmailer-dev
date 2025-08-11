@@ -15,7 +15,7 @@ This is a development environment for PHPMailer.
 2. Go into the PHPMailer directory and run `composer install`
 3. Run `lando start` to start the development environment
 
-## Tesing
+## Testing
 
 1. Run `lando test` to run the tests
 2. Run `lando test-all` to run all the tests including the excluded groups
