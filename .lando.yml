@@ -9,6 +9,12 @@ proxy:
   mailpit:
     - mailpit.phpmailer.lndo.site
 services:
+  appserver:
+    xdebug: true
+    config:
+      php: .lando/php.ini
+    depends_on:
+        - mailpit
   mailpit:
     type: mailpit
     mailFrom:
@@ -27,6 +33,9 @@ services:
       user: root
       command: ["bash","-lc","/usr/local/bin/postfix-start.sh"]
   appserver-nombstring:
+    xdebug: true
+    config:
+      php: .lando/php.ini
     type: compose
     overrides:
       build:
@@ -38,14 +47,27 @@ services:
       volumes:
         - ./:/app
       depends_on:
-        - postfix
+        - mailpit
+  appserver-noopenssl:
+    type: compose
+    overrides:
+      build:
+        context: .
+        dockerfile: Dockerfile.noopenssl
+      command: ["bash","-lc","sleep infinity"]
+      working_dir: /app
+      user: root
+      volumes:
+        - ./:/app
+      depends_on:
+        - mailpit
 tooling:
   test:
     service: appserver
-    cmd: bash -lc './scripts/lando-test.sh'
+    cmd: bash -lc './scripts/lando-test.sh -- "$@"'
   test-nombstring:
     service: appserver-nombstring
-    cmd: bash  -lc './scripts/lando-test.sh nombstring'
+    cmd: bash -lc './scripts/lando-test.sh nombstring -- "$@"'
   test-noopenssl:
     service: appserver-noopenssl
-    cmd: bash  -lc './scripts/lando-test.sh openssl'
+    cmd: bash -lc './scripts/lando-test.sh noopenssl -- "$@"'

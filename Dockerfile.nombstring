@@ -24,5 +24,11 @@ RUN apk add --no-cache \
     php83-zip
 
 RUN mkdir -p /etc/php83/conf.d \
-    && printf "error_reporting=E_ALL\ndisplay_errors=On\nsendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php83/conf.d/zz-lando.ini \
+    && printf "sendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php83/conf.d/zz-lando.ini \
     && ln -sf /usr/bin/php83 /usr/bin/php
+
+# Include custom PHPUnit PHAR that does not require mbstring
+RUN mkdir -p /usr/local/share/phpunit
+COPY phpunit-12.4-nombstring.phar /usr/local/share/phpunit/phpunit-12.4-nombstring.phar
+RUN chmod +x /usr/local/share/phpunit/phpunit-12.4-nombstring.phar \
+    && ln -sf /usr/local/share/phpunit/phpunit-12.4-nombstring.phar /usr/local/bin/phpunit-nombstring
