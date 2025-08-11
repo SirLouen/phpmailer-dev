@@ -3,7 +3,10 @@
 set -euo pipefail
 
 MODE="default"
-if [ "${1:-}" = "nombstring" ] || [ "${1:-}" = "noopenssl" ]; then
+if [ "${1:-}" = "nombstring" ] || 
+   [ "${1:-}" = "noopenssl" ] ||
+   [ "${1:-}" = "qmail" ] || 
+   [ "${1:-}" = "default" ]; then
   MODE=$1
   shift
 fi
@@ -45,9 +48,8 @@ if [ "${MODE}" = "nombstring" ]; then
     fi
   fi
 
-  PHPUNIT_BIN=(php /usr/local/share/phpunit/phpunit-12.4-nombstring.phar)
+  PHPUNIT_BIN=(php /usr/local/share/phpunit/phpunit-9.5.6.phar)
 elif [ "${MODE}" = "noopenssl" ]; then
-  # Ensure openssl is NOT loaded in this mode
   if php -r 'exit(extension_loaded("openssl")?0:1);'; then
     echo "Error: openssl is loaded but should not be in noopenssl mode" >&2
     exit 1

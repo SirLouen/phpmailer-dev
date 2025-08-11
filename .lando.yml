@@ -13,6 +13,9 @@ services:
     xdebug: true
     config:
       php: .lando/php.ini
+    build_as_root:
+      - apt-get update
+      - apt-get install -y netcat-openbsd
     depends_on:
         - mailpit
   mailpit:
@@ -64,10 +67,16 @@ services:
 tooling:
   test:
     service: appserver
-    cmd: bash -lc './scripts/lando-test.sh -- "$@"'
+    cmd: bash -lc './scripts/lando-test.sh default -- "$@"'
+  clean-test:
+    service: appserver
+    cmd: bash -lc './scripts/lando-test.sh default -- --exclude-group nombstring,languages,dkim,qmail'
   test-nombstring:
     service: appserver-nombstring
     cmd: bash -lc './scripts/lando-test.sh nombstring -- "$@"'
-  test-noopenssl:
+  test-noopenssl: # TODO: Remove dkim group, add groups to no openssl tests
     service: appserver-noopenssl
     cmd: bash -lc './scripts/lando-test.sh noopenssl -- "$@"'
+  test-qmail: #TODO: Add an image with Qmail, add testQmailSend to qmail group
+    service: appserver-qmail
+    cmd: bash -lc './scripts/lando-test.sh qmail -- --filter testQmailSend'
