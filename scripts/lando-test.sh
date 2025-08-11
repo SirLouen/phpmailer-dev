@@ -2,9 +2,16 @@
 
 set -euo pipefail
 
-# Optional first arg selects a mode (e.g. "nombstring")
-MODE=${1:-}
-shift || true
+MODE="default"
+if [ "${1:-}" = "nombstring" ] || [ "${1:-}" = "noopenssl" ]; then
+  MODE=$1
+  shift
+fi
+
+if [ "${1:-}" = "--" ]; then
+  shift
+fi
+
 REM_ARGS=("$@")
 
 if [ -f ./testbootstrap.php ]; then
@@ -16,6 +23,8 @@ export RELAY_HOST=postfix
 export RELAY_PORT=25
 export RELAY_USERNAME="smtpuser@localhost"
 export RELAY_PASSWORD="pass"
+
+PHPUNIT_BIN=(./PHPMailer/vendor/bin/phpunit)
 
 if [ ! -f ./PHPMailer/vendor/autoload.php ]; then
   (cd PHPMailer && composer install --no-interaction --prefer-dist)
@@ -35,14 +44,20 @@ if [ "${MODE}" = "nombstring" ]; then
       sudo chmod +x /usr/sbin/sendmail /var/qmail/bin/sendmail
     fi
   fi
-fi
 
-PHPUNIT_BIN=./PHPMailer/vendor/bin/phpunit
+  PHPUNIT_BIN=(php /usr/local/share/phpunit/phpunit-12.4-nombstring.phar)
+elif [ "${MODE}" = "noopenssl" ]; then
+  # Ensure openssl is NOT loaded in this mode
+  if php -r 'exit(extension_loaded("openssl")?0:1);'; then
+    echo "Error: openssl is loaded but should not be in noopenssl mode" >&2
+    exit 1
+  fi
+fi
 
 PHPUNIT_ARGS=(
   --configuration PHPMailer/phpunit.xml.dist
   --bootstrap phpunit-bootstrap.php
 )
 
-"$PHPUNIT_BIN" "${PHPUNIT_ARGS[@]}" "${REM_ARGS[@]}"
+"${PHPUNIT_BIN[@]}" "${PHPUNIT_ARGS[@]}" "${REM_ARGS[@]}"
 
