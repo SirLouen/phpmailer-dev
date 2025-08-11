@@ -67,10 +67,10 @@ services:
 tooling:
   test:
     service: appserver
-    cmd: bash -lc './scripts/lando-test.sh default -- "$@"'
-  clean-test:
-    service: appserver
     cmd: bash -lc './scripts/lando-test.sh default -- --exclude-group nombstring,languages,dkim,qmail'
+  test-all:
+    service: appserver
+    cmd: bash -lc './scripts/lando-test.sh default -- "$@"'
   test-nombstring:
     service: appserver-nombstring
     cmd: bash -lc './scripts/lando-test.sh nombstring -- "$@"'
