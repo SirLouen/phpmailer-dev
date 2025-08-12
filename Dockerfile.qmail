@@ -1,0 +1,53 @@
+FROM debian:bullseye-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install qmail (notqmail version for simplicity with Debian)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gnupg curl ca-certificates && \
+    echo 'deb http://download.opensuse.org/repositories/home:/notqmail/Debian_11/ /' \
+        > /etc/apt/sources.list.d/notqmail.list && \
+    curl -fsSL https://download.opensuse.org/repositories/home:notqmail/Debian_11/Release.key \
+        | gpg --dearmor -o /etc/apt/trusted.gpg.d/notqmail.gpg && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        notqmail daemontools ucspi-tcp daemontools-run && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install PHP 8.2 for PHPMailer tests
+RUN set -eux; \
+    curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/php.gpg; \
+    echo "deb https://packages.sury.org/php/ bullseye main" > /etc/apt/sources.list.d/php.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends php8.2-cli php8.2-mbstring php8.2-xml; \
+    mkdir -p /etc/php/8.2/cli/conf.d; \
+    rm -rf /var/lib/apt/lists/*
+
+# Configure qmail
+ARG MAILNAME=localhost
+RUN set -eux; \
+    echo "$MAILNAME" > /var/qmail/control/me; \
+    echo "$MAILNAME" > /var/qmail/control/rcpthosts; \
+    : > /var/qmail/control/locals; \
+    echo "./Maildir" > /var/qmail/control/defaultdelivery; \
+    mkdir -p /var/qmail/alias; \
+    echo '&postmaster' > /var/qmail/alias/.qmail-postmaster; \
+    echo '&postmaster' > /var/qmail/alias/.qmail-root; \
+    echo '&postmaster' > /var/qmail/alias/.qmail-mailer-daemon; \
+    echo ":mailpit:1025" > /var/qmail/control/smtproutes; \
+    mkdir -p /service/qmail-send /service/qmail-smtpd
+
+# Configure Relaying
+RUN set -eux; \
+    echo '127.:allow,RELAYCLIENT=""' > /etc/tcp.smtp; \
+    tcprules /etc/tcp.smtp.cdb /etc/tcp.smtp.tmp < /etc/tcp.smtp || true
+
+# Prepare executables
+RUN printf '#!/bin/sh\nexec env - PATH=/var/qmail/bin:/usr/bin:/bin /var/qmail/bin/qmail-start ./Maildir/ 2>&1\n' \
+        > /service/qmail-send/run && chmod 755 /service/qmail-send/run && \
+    printf '#!/bin/sh\nexec /usr/bin/tcpserver -v -R -l0 -H -c40 -x /etc/tcp.smtp.cdb -u $(id -u qmaild) -g $(getent group qmail | cut -d: -f3) 0 25 /var/qmail/bin/qmail-smtpd 2>&1\n' \
+        > /service/qmail-smtpd/run && chmod 755 /service/qmail-smtpd/run
+
+EXPOSE 25
+CMD ["svscan", "/service"]

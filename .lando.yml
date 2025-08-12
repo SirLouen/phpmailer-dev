@@ -35,6 +35,14 @@ services:
         dockerfile: Dockerfile.postfix
       user: root
       command: ["bash","-lc","/usr/local/bin/postfix-start.sh"]
+  qmail:
+    type: compose
+    overrides:
+      build:
+        context: .
+        dockerfile: Dockerfile.qmail
+      user: root
+      command: ["bash","-lc","svscan /service"]
   appserver-nombstring:
     xdebug: true
     config:
@@ -77,6 +85,6 @@ tooling:
   test-noopenssl: # TODO: Remove dkim group, add groups to no openssl tests
     service: appserver-noopenssl
     cmd: bash -lc './scripts/lando-test.sh noopenssl -- "$@"'
-  test-qmail: #TODO: Add an image with Qmail, add testQmailSend to qmail group
-    service: appserver-qmail
-    cmd: bash -lc './scripts/lando-test.sh qmail -- --filter testQmailSend'
+  test-qmail:
+    service: qmail
+    cmd: bash -lc './scripts/lando-test.sh qmail -- --filter MailTransportTest'
