@@ -8,6 +8,8 @@ proxy:
     - phpmailer.lndo.site
   mailpit:
     - mailpit.phpmailer.lndo.site
+  qmail:
+    - qmail.phpmailer.lndo.site
 services:
   appserver:
     xdebug: true
@@ -16,7 +18,8 @@ services:
     build_as_root:
       - apt-get update
       - apt-get install -y netcat-openbsd
-    depends_on:
+    overrides:
+      depends_on:
         - mailpit
   mailpit:
     type: mailpit
@@ -43,11 +46,15 @@ services:
         dockerfile: Dockerfile.qmail
       user: root
       command: ["bash","-lc","svscan /service"]
+      environment:
+        XDEBUG_CONFIG: client_host=host.lando.internal
+      volumes:
+        - ./.lando/php-qmail.ini:/etc/php/8.2/cli/conf.d/99-xdebug.ini:ro
+    scanner: false   
   appserver-nombstring:
-    xdebug: true
+    type: compose
     config:
       php: .lando/php.ini
-    type: compose
     overrides:
       build:
         context: .

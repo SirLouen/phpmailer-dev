@@ -20,7 +20,7 @@ RUN set -eux; \
     curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/php.gpg; \
     echo "deb https://packages.sury.org/php/ bullseye main" > /etc/apt/sources.list.d/php.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends php8.2-cli php8.2-mbstring php8.2-xml; \
+    apt-get install -y --no-install-recommends php8.2-cli php8.2-mbstring php8.2-xml php8.2-xdebug; \
     mkdir -p /etc/php/8.2/cli/conf.d; \
     rm -rf /var/lib/apt/lists/*
 

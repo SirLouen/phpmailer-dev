@@ -29,5 +29,6 @@ This is a development environment for PHPMailer.
 
 ## Changelog
 
+1.1.1 - 2025-08-12 - Added Qmail support for Xdebug
 1.1.0 - 2025-08-12 - Added Qmail support
 1.0.0 - 2025-08-12 - Initial release
