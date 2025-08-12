@@ -19,7 +19,15 @@ This is a development environment for PHPMailer.
 
 1. Run `lando test` to run the tests
 2. Run `lando test-all` to run all the tests including the excluded groups
+3. Run `lando test-qmail` to run the tests with
+4. Run `test-nombstring` to run the tests without the mbstring extension
+
+## TODOs
+
+1. Add full Qmail testing support with the rest of the tests.
+2. Add full support for testing without the mbstring extension just using the PHPMailer mbstringwrapper.
 
 ## Changelog
 
+1.1.0 - 2025-08-12 - Added Qmail support
 1.0.0 - 2025-08-12 - Initial release
