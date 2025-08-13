@@ -8,8 +8,6 @@ proxy:
     - phpmailer.lndo.site
   mailpit:
     - mailpit.phpmailer.lndo.site
-  qmail:
-    - qmail.phpmailer.lndo.site
 services:
   appserver:
     xdebug: true
@@ -64,8 +62,11 @@ services:
       user: root
       volumes:
         - ./:/app
+        - ./.lando/php-nombstring.ini:/etc/php7/conf.d/99-xdebug.ini:ro
       depends_on:
         - mailpit
+      environment:
+        XDEBUG_CONFIG: client_host=host.lando.internal
   appserver-noopenssl:
     type: compose
     overrides:
@@ -82,16 +83,16 @@ services:
 tooling:
   test:
     service: appserver
-    cmd: bash -lc './scripts/lando-test.sh default -- --exclude-group nombstring,languages,dkim,qmail'
+    cmd: bash -lc './scripts/lando-test.sh default -- --exclude-group mbstringExtDisabled,languages,dkim,qmail'
   test-all:
     service: appserver
     cmd: bash -lc './scripts/lando-test.sh default -- "$@"'
   test-nombstring:
     service: appserver-nombstring
-    cmd: bash -lc './scripts/lando-test.sh nombstring -- "$@"'
+    cmd: bash -lc './scripts/lando-test.sh nombstring -- --exclude-group mbstringExtRequired,languages,dkim,qmail,pop3'
   test-noopenssl: # TODO: Remove dkim group, add groups to no openssl tests
     service: appserver-noopenssl
     cmd: bash -lc './scripts/lando-test.sh noopenssl -- "$@"'
-  test-qmail:
+  test-qmail: #TODO: Enable Full Testing with Qmail
     service: qmail
     cmd: bash -lc './scripts/lando-test.sh qmail -- --filter MailTransportTest'

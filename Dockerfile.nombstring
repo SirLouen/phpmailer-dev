@@ -4,7 +4,9 @@ RUN apk add --no-cache \
     bash \
     ca-certificates \
     git \
+    netcat-openbsd \
     curl \
+    msmtp \
     php7 \
     php7-cli \
     php7-phar \
@@ -22,11 +24,24 @@ RUN apk add --no-cache \
     php7-intl \
     php7-imap \
     php7-zip \
-    php7-json
+    php7-json \
+    php7-xdebug
 
 RUN mkdir -p /etc/php7/conf.d \
     && printf "sendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php7/conf.d/zz-lando.ini \
     && ln -sf /usr/bin/php7 /usr/bin/php
+
+# msmtp to relay mail to mailpit
+RUN printf "defaults\naccount default\nhost mailpit\nport 1025\nauto_from on\ntls off\n" > /etc/msmtprc \
+    && chmod 644 /etc/msmtprc \
+    && ln -sf /usr/bin/msmtp /usr/sbin/sendmail
+
+# Enable Xdebug
+RUN if [ -f /etc/php7/conf.d/50_xdebug.ini ]; then \
+        sed -i -E 's|^;?\s*zend_extension.*|zend_extension=/usr/lib/php7/modules/xdebug.so|' /etc/php7/conf.d/50_xdebug.ini; \
+    else \
+        echo 'zend_extension=/usr/lib/php7/modules/xdebug.so' > /etc/php7/conf.d/50_xdebug.ini; \
+    fi
 
 # Include custom PHPUnit PHAR that does not require mbstring
 RUN mkdir -p /usr/local/share/phpunit
