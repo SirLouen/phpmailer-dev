@@ -28,6 +28,11 @@ export RELAY_USERNAME="smtpuser@localhost"
 export RELAY_PASSWORD="pass"
 
 PHPUNIT_BIN=(./PHPMailer/vendor/bin/phpunit)
+PHPUNIT_ARGS=(
+  --bootstrap phpunit-bootstrap.php
+  --configuration PHPMailer/phpunit.xml.dist
+  --colors=always
+)
 
 if [ ! -f ./PHPMailer/vendor/autoload.php ]; then
   (cd PHPMailer && composer install --no-interaction --prefer-dist)
@@ -49,17 +54,23 @@ if [ "${MODE}" = "nombstring" ]; then
   fi
 
   PHPUNIT_BIN=(php /usr/local/share/phpunit/phpunit-9.5.6.phar)
+  
+  # Some tweaking for a no-configuration run.
+  CACHE_DIR=${XDG_CACHE_HOME:-/tmp}/phpunit
+  mkdir -p "$CACHE_DIR"
+  PHPUNIT_ARGS=(
+    --bootstrap phpunit-bootstrap.php
+    --no-configuration
+    --colors=always
+    --cache-result-file "$CACHE_DIR/.phpunit.result.cache"
+    ./PHPMailer/test
+  )
 elif [ "${MODE}" = "noopenssl" ]; then
   if php -r 'exit(extension_loaded("openssl")?0:1);'; then
     echo "Error: openssl is loaded but should not be in noopenssl mode" >&2
     exit 1
   fi
 fi
-
-PHPUNIT_ARGS=(
-  --configuration PHPMailer/phpunit.xml.dist
-  --bootstrap phpunit-bootstrap.php
-)
 
 "${PHPUNIT_BIN[@]}" "${PHPUNIT_ARGS[@]}" "${REM_ARGS[@]}"
 
