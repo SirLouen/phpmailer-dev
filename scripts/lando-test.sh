@@ -5,6 +5,7 @@ set -euo pipefail
 MODE="default"
 if [ "${1:-}" = "nombstring" ] || 
    [ "${1:-}" = "noopenssl" ] ||
+   [ "${1:-}" = "noimap" ] ||
    [ "${1:-}" = "qmail" ] || 
    [ "${1:-}" = "default" ]; then
   MODE=$1
@@ -68,6 +69,12 @@ if [ "${MODE}" = "nombstring" ]; then
 elif [ "${MODE}" = "noopenssl" ]; then
   if php -r 'exit(extension_loaded("openssl")?0:1);'; then
     echo "Error: openssl is loaded but should not be in noopenssl mode" >&2
+    exit 1
+  fi
+fi
+elif [ "${MODE}" = "noimap" ]; then
+  if php -r 'exit(extension_loaded("imap")?0:1);'; then
+    echo "Error: imap is loaded but should not be in noimap mode" >&2
     exit 1
   fi
 fi

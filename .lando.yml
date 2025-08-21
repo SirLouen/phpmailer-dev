@@ -67,6 +67,24 @@ services:
         - mailpit
       environment:
         XDEBUG_CONFIG: client_host=host.lando.internal
+  appserver-noimap:
+    type: compose
+    config:
+      php: .lando/php.ini
+    overrides:
+      build:
+        context: .
+        dockerfile: Dockerfile.noimap
+      command: ["bash","-lc","sleep infinity"]
+      working_dir: /app
+      user: root
+      volumes:
+        - ./:/app
+        - ./.lando/php-noimap.ini:/etc/php8/conf.d/99-xdebug.ini:ro
+      depends_on:
+        - mailpit
+      environment:
+        XDEBUG_CONFIG: client_host=host.lando.internal
   appserver-noopenssl:
     type: compose
     overrides:
@@ -99,3 +117,6 @@ tooling:
   test-qmail: #TODO: Enable Full Testing with Qmail
     service: qmail
     cmd: bash -lc './scripts/lando-test.sh qmail -- --filter MailTransportTest'
+  test-noimap:
+    service: appserver-noimap
+    cmd: bash -lc './scripts/lando-test.sh noimap -- "$@"'
