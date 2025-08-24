@@ -71,7 +71,6 @@ elif [ "${MODE}" = "noopenssl" ]; then
     echo "Error: openssl is loaded but should not be in noopenssl mode" >&2
     exit 1
   fi
-fi
 elif [ "${MODE}" = "noimap" ]; then
   if php -r 'exit(extension_loaded("imap")?0:1);'; then
     echo "Error: imap is loaded but should not be in noimap mode" >&2

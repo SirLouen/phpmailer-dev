@@ -120,3 +120,6 @@ tooling:
   test-noimap:
     service: appserver-noimap
     cmd: bash -lc './scripts/lando-test.sh noimap -- "$@"'
+  test-noimap-all:
+    service: appserver-noimap
+    cmd: bash -lc './scripts/lando-test.sh noimap -- --exclude-group mbstringExtDisabled,languages,dkim,qmail,pop3'
