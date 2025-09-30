@@ -2,7 +2,7 @@ name: phpmailer
 recipe: lamp
 config:
   webroot: .
-  php: '8.2'
+  php: '8.4'
 proxy:
   appserver:
     - phpmailer.lndo.site

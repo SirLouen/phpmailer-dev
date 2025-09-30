@@ -6,29 +6,29 @@ RUN apk add --no-cache \
     netcat-openbsd \
     curl \
     msmtp \
-    php8 \
-    php8-cli \
-    php8-phar \
-    php8-ctype \
-    php8-dom \
-    php8-xml \
-    php8-xmlwriter \
-    php8-tokenizer \
-    php8-openssl \
-    php8-iconv \
-    php8-session \
-    php8-curl \
-    php8-pdo \
-    php8-pdo_mysql \
-    php8-intl \
-    php8-zip \
-    php8-json \
-    php8-xdebug \
-    php8-mbstring
+    php83 \
+    php83-cli \
+    php83-phar \
+    php83-ctype \
+    php83-dom \
+    php83-xml \
+    php83-xmlwriter \
+    php83-tokenizer \
+    php83-openssl \
+    php83-iconv \
+    php83-session \
+    php83-curl \
+    php83-pdo \
+    php83-pdo_mysql \
+    php83-intl \
+    php83-zip \
+    php83-json \
+    php83-xdebug \
+    php83-mbstring
 
-RUN mkdir -p /etc/php8/conf.d \
-    && printf "sendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php8/conf.d/zz-lando.ini \
-    && ln -sf /usr/bin/php8 /usr/bin/php
+RUN mkdir -p /etc/php83/conf.d \
+    && printf "sendmail_path=/usr/sbin/sendmail -t -i\n" > /etc/php83/conf.d/zz-lando.ini \
+    && ln -sf /usr/bin/php83 /usr/bin/php
 
 # msmtp to relay mail to mailpit
 RUN printf "defaults\naccount default\nhost mailpit\nport 1025\nauto_from on\ntls off\n" > /etc/msmtprc \
@@ -36,8 +36,8 @@ RUN printf "defaults\naccount default\nhost mailpit\nport 1025\nauto_from on\ntl
     && ln -sf /usr/bin/msmtp /usr/sbin/sendmail
 
 # Enable Xdebug
-RUN if [ -f /etc/php7/conf.d/50_xdebug.ini ]; then \
-        sed -i -E 's|^;?\s*zend_extension.*|zend_extension=/usr/lib/php8/modules/xdebug.so|' /etc/php8/conf.d/50_xdebug.ini; \
+RUN if [ -f /etc/php83/conf.d/50_xdebug.ini ]; then \
+        sed -i -E 's|^;?\s*zend_extension.*|zend_extension=/usr/lib/php83/modules/xdebug.so|' /etc/php83/conf.d/50_xdebug.ini; \
     else \
-        echo 'zend_extension=/usr/lib/php8/modules/xdebug.so' > /etc/php8/conf.d/50_xdebug.ini; \
+        echo 'zend_extension=/usr/lib/php83/modules/xdebug.so' > /etc/php83/conf.d/50_xdebug.ini; \
     fi
