@@ -3,12 +3,21 @@ recipe: lamp
 config:
   webroot: .
   php: '8.4'
+  database: mysql:8.0
 proxy:
   appserver:
     - phpmailer.lndo.site
   mailpit:
     - mailpit.phpmailer.lndo.site
 services:
+  database:
+    overrides:
+      image: phpmailer_database
+      build:
+        context: .
+        dockerfile: Dockerfile.mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: password
   appserver:
     xdebug: true
     config:
@@ -98,6 +107,24 @@ services:
         - ./:/app
       depends_on:
         - mailpit
+  sendmail:
+    type: compose
+    config:
+      php: .lando/php.ini
+    overrides:
+      hostname: sendmail.localdomain
+      build:
+        context: .
+        dockerfile: Dockerfile.sendmail
+      user: root
+      working_dir: /app
+      command: ["/usr/sbin/sendmail", "-bD", "-q15m"]
+      environment:
+        XDEBUG_CONFIG: client_host=host.lando.internal
+      volumes:
+        - ./.lando/php-sendmail.ini:/etc/php/8.2/cli/conf.d/99-xdebug.ini:ro
+        - ./.lando/php-sendmail-path.ini:/etc/php/8.2/cli/conf.d/98-sendmail-path.ini:ro
+        - ./:/app
 tooling:
   test:
     service: appserver
@@ -105,6 +132,9 @@ tooling:
   test-all:
     service: appserver
     cmd: bash -lc './scripts/lando-test.sh default -- "$@"'
+  test-php-ini:
+    service: sendmail
+    cmd: bash -lc 'cd /app && ./scripts/lando-test.sh sendmail -- "$@"'
   test-nombstring:
     service: appserver-nombstring
     cmd: bash -lc './scripts/lando-test.sh nombstring -- --exclude-group mbstringExtRequired,languages,dkim,qmail,pop3'

@@ -1,0 +1,27 @@
+# Minimal sendmail container for testing PHPMailer mail() transport.
+# Provides /usr/sbin/sendmail listening on localhost; not hardened for production.
+
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install sendmail and dependencies, then generate a default config non-interactively.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+	 sendmail \
+	 sendmail-cf \
+	 php-cli \
+	 php-xml \
+	 php-mbstring \
+	 ca-certificates \
+	 locales \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /etc/mail \
+ && printf "localhost\n" > /etc/mail/local-host-names \
+ && sendmailconfig -y || true
+
+# Expose SMTP port (loopback use inside the stack).
+EXPOSE 25
+
+# Run sendmail in daemon mode, queue runner every 15 minutes.
+CMD ["/usr/sbin/sendmail", "-bd", "-q15m"]

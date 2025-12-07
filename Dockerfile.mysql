@@ -1,0 +1,21 @@
+FROM mysql:8.0
+
+# Provide a www-data user/group so Lando's user-perms helper can remap ownership.
+RUN if ! getent group 33 >/dev/null; then \
+            groupadd -g 33 www-data; \
+        fi \
+        && if ! id -u www-data >/dev/null 2>&1; then \
+            useradd -r -u 33 -g 33 -d /var/www -s /bin/bash www-data; \
+        else \
+            usermod -d /var/www -s /bin/bash www-data; \
+        fi \
+        && mkdir -p /var/www \
+        && chown 33:33 /var/www \
+        && microdnf install -y util-linux-user \
+        && microdnf clean all
+
+COPY docker/mysql/launch.sh /launch.sh
+COPY docker/mysql/run.sh /run.sh
+RUN chmod +x /launch.sh /run.sh
+
+ENTRYPOINT ["/launch.sh"]

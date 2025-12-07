@@ -6,6 +6,7 @@ MODE="default"
 if [ "${1:-}" = "nombstring" ] || 
    [ "${1:-}" = "noopenssl" ] ||
    [ "${1:-}" = "noimap" ] ||
+   [ "${1:-}" = "sendmail" ] ||
    [ "${1:-}" = "qmail" ] || 
    [ "${1:-}" = "default" ]; then
   MODE=$1
