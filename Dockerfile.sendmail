@@ -5,7 +5,7 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install sendmail and dependencies, then generate a default config non-interactively.
+# Install sendmail, PHP, and Xdebug, then generate a default config non-interactively.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
 	 sendmail \
@@ -13,6 +13,7 @@ RUN apt-get update \
 	 php-cli \
 	 php-xml \
 	 php-mbstring \
+	 php-xdebug \
 	 ca-certificates \
 	 locales \
  && rm -rf /var/lib/apt/lists/* \
