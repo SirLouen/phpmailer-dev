@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,9 +6,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         gnupg curl ca-certificates && \
-    echo 'deb http://download.opensuse.org/repositories/home:/notqmail/Debian_11/ /' \
+    echo 'deb http://download.opensuse.org/repositories/home:/notqmail/Debian_12/ /' \
         > /etc/apt/sources.list.d/notqmail.list && \
-    curl -fsSL https://download.opensuse.org/repositories/home:notqmail/Debian_11/Release.key \
+    curl -fsSL https://download.opensuse.org/repositories/home:notqmail/Debian_12/Release.key \
         | gpg --dearmor -o /etc/apt/trusted.gpg.d/notqmail.gpg && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -18,7 +18,7 @@ RUN apt-get update && \
 # Install PHP 8.2 for PHPMailer tests
 RUN set -eux; \
     curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/php.gpg; \
-    echo "deb https://packages.sury.org/php/ bullseye main" > /etc/apt/sources.list.d/php.list; \
+    echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends php8.2-cli php8.2-mbstring php8.2-xml php8.2-xdebug; \
     mkdir -p /etc/php/8.2/cli/conf.d; \
